@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Firebase App</title>
+</head>
+<body>
+    <div>
+        <input type="text" id="name" placeholder="Enter your name">
+        <button onclick="submitName()">Submit Name</button>
+    </div>
+    <div>
+        <input type="text" id="city" placeholder="Enter your city">
+        <button onclick="submitCity()">Submit City</button>
+    </div>
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDlyN4o_t0tjjqpJeV2Zc4NmGYBcaT6bO4",
+            authDomain: "destroy-taps.firebaseapp.com",
+            projectId: "destroy-taps",
+            storageBucket: "destroy-taps.appspot.com",
+            messagingSenderId: "582503154101",
+            appId: "1:582503154101:web:a086290519eec9e4acd9fc",
+            measurementId: "G-KM239GX0DP"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.submitName = async () => {
+            const name = document.getElementById('name').value;
+            if (name) {
+                const nameRef = doc(db, "users", name);
+                await setDoc(nameRef, { name: name });
+                console.log("Name submitted!");
+            }
+        };
+
+        window.submitCity = async () => {
+            const name = document.getElementById('name').value;
+            const city = document.getElementById('city').value;
+            if (name && city) {
+                const cityRef = doc(db, "users", name, "cities", city);
+                await setDoc(cityRef, { city: city });
+                console.log("City submitted!");
+            }
+        };
+    </script>
+</body>
+</html>
