@@ -13,23 +13,25 @@
         <input type="text" id="city" placeholder="Enter your city">
         <button onclick="submitCity()">Submit City</button>
     </div>
+    <div>
+        <input type="text" id="lookupName" placeholder="Lookup name">
+        <button onclick="lookupCity()">Lookup City</button>
+    </div>
+    <div id="displayCity"></div>
     <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        // Modular Firebase v9+ imports
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js';
 
-        // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDlyN4o_t0tjjqpJeV2Zc4NmGYBcaT6bO4",
-            authDomain: "destroy-taps.firebaseapp.com",
-            projectId: "destroy-taps",
-            storageBucket: "destroy-taps.appspot.com",
-            messagingSenderId: "582503154101",
-            appId: "1:582503154101:web:a086290519eec9e4acd9fc",
-            measurementId: "G-KM239GX0DP"
+            apiKey: "your-api-key",
+            authDomain: "your-auth-domain",
+            projectId: "your-project-id",
+            storageBucket: "your-storage-bucket",
+            messagingSenderId: "your-messaging-sender-id",
+            appId: "your-app-id"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -49,6 +51,22 @@
                 const cityRef = doc(db, "users", name, "cities", city);
                 await setDoc(cityRef, { city: city });
                 console.log("City submitted!");
+            }
+        };
+
+        window.lookupCity = async () => {
+            const name = document.getElementById('lookupName').value;
+            const citiesRef = collection(db, "users", name, "cities");
+            const snapshot = await getDocs(citiesRef);
+            if (!snapshot.empty) {
+                let cities = [];
+                snapshot.forEach(doc => {
+                    // Assuming you store city name in a field, adjust as needed
+                    cities.push(doc.data().city);
+                });
+                document.getElementById('displayCity').innerHTML = 'Cities: ' + cities.join(', ');
+            } else {
+                document.getElementById('displayCity').innerHTML = 'No cities found for user';
             }
         };
     </script>
