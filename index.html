@@ -2,41 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Simple Firebase App</title>
-    <style>
-        button {
-            background-color: #64adc4;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            margin-top: 10px;
-            cursor: pointer;
-        }
+    <title>Alco Ticketing System</title>
+   <style>
+   
+   .tickets-container {
+        display: flex;              /* Enable Flexbox */
+        justify-content: space-around; /* Distribute space evenly around the items */
+        width: 100%;                /* Take full width of the container */
+    }
+	
+	
+    .ticket-item {
+        border: 4px solid lightblue; /* Set the border color */
+        border-radius: 10px;        /* Rounded corners */
+        padding: 20px;              /* Some padding inside the border */
+        margin: 10px;               /* Margin outside the border */
+        background-color: #ffffff;  /* Light blue background */
+        width: 50%;               /* Fixed width */
+        height: auto;               /* Automatic height */
+    }
 
-        select {
-            text-align: center;
-            width: 150px;
-            height: 25px;
-            background-color: #64adc4;
-            color: white;
-            font-size: 16px;
-            border-radius: 5px;
-            padding-left: 10px;
-            border: 1px solid #4CAF50;
-            cursor: pointer;
-        }
-    </style>
+    #tickets {
+        border: 4px solid lightblue; /* Set the border color */
+        border-radius: 10px;        /* Rounded corners */
+        padding: 20px;              /* Some padding inside the border */
+        margin: 10px;               /* Margin outside the border */
+        background-color: #ffffff;  /* Light blue background */
+        width: 600px;               /* Fixed width */
+        height: 100%               /* Automatic height adjustment */
+    }
+
+    /* Existing styles */
+    body {
+        font-family: Arial, sans-serif;
+    }
+    input[type="text"], textarea {
+        width: 200px;
+        height: 30px;
+        padding: 10px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        border: 2px solid #64adc4;
+        border-radius: 5px;
+        background-color: #eaf6f9;
+        box-sizing: border-box;
+    }
+    button, select {
+        background-color: #64adc4;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+    select {
+        text-align: center;
+        width: 200px;
+        height: 35px;
+        padding-left: 10px;
+        border: 1px solid #4CAF50;
+    }
+</style>
+
 </head>
 <body>
-
 <center>
     <!-- Ticket Submission Form -->
-    <div>
+    <div id = "tickets">
         <h2>Submit a Ticket</h2>
-        <input type="text" id="ticketTitle" placeholder="Ticket Title"><br>
-        <input type="text" id="ticketName" placeholder="Your Name"><br>
-        <textarea id="ticketDesc" placeholder="Describe your issue"></textarea><br>
+        <input type="text" id="ticketTitle" placeholder="Ticket Issue"><br>
+        <input type="text" id="ticketName" placeholder="Requester"><br>
+        <textarea id="ticketDesc" placeholder="Description"></textarea><br>
         <select id="ticketPriority">
             <option value="Low">Low Priority</option>
             <option value="Medium">Medium Priority</option>
@@ -46,22 +83,40 @@
     </div>
 
     <!-- Display Tickets -->
-    <div id="ticketsList">
-        <h2>Open Tickets</h2>
-    </div>
+	
+	 <div class="tickets-container">
+	 
+	<div id = "tickets">
+	
+	<div id="openTicketsList">
+    <h2>Open Tickets</h2>
+</div>
+
+</div>
+<br>
+
+<div id = "tickets">
+<!-- Pending Tickets -->
+<div id="pendingTicketsList">
+    <h2>Pending Tickets</h2>
+</div>
+</div>
+
+    
+	</div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js';
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDgqB5FaU1Zreq3H5WwfDo7WSUEkVOdKxU",
-  authDomain: "formfiller-b9856.firebaseapp.com",
-  projectId: "formfiller-b9856",
-  storageBucket: "formfiller-b9856.appspot.com",
-  messagingSenderId: "424653050423",
-  appId: "1:424653050423:web:dfae46bc004eaedefae5b2",
-  measurementId: "G-9WPM6EEMQ7"
+            authDomain: "formfiller-b9856.firebaseapp.com",
+            projectId: "formfiller-b9856",
+            storageBucket: "formfiller-b9856.appspot.com",
+            messagingSenderId: "424653050423",
+            appId: "1:424653050423:web:dfae46bc004eaedefae5b2",
+            measurementId: "G-9WPM6EEMQ7"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -86,27 +141,32 @@
             }
         };
 
-        window.loadTickets = async () => {
-            const ticketsList = document.getElementById('ticketsList');
-            ticketsList.innerHTML = '<h2>Open Tickets</h2>';
+       window.loadTickets = async () => {
+    const openTicketsList = document.getElementById('openTicketsList');
+    const pendingTicketsList = document.getElementById('pendingTicketsList');
+    openTicketsList.innerHTML = '<h2>Open Tickets</h2>';
+    pendingTicketsList.innerHTML = '<h2>Pending Tickets</h2>';
 
-            const querySnapshot = await getDocs(collection(db, "tickets"));
-            querySnapshot.forEach((doc) => {
-                const ticket = doc.data();
-                let assignmentControl = ticket.status.startsWith("Assigned to")
-                    ? `<button onclick='unassignTicket("${doc.id}")'>Unassign</button>`
-                    : `<select id='assign-${doc.id}'>
-                           <option value=''>Assign To:</option>
-                           <option value='Bob'>Bob</option>
-                           <option value='Joe'>Joe</option>
-                           <option value='Adam'>Adam</option>
-                       </select>
-					   <br>
-                       <button onclick='assignTicket("${doc.id}")'>Save</button>`;
-                
-                ticketsList.innerHTML += `<div><br><b>${ticket.title}</b> <br>( ${ticket.priority} Priority )<br> ${ticket.status} <br> Requester: ${ticket.requestor} <br> Description: ${ticket.description}<br> ${assignmentControl}</div>`;
-            });
-        };
+    const querySnapshot = await getDocs(collection(db, "tickets"));
+    querySnapshot.forEach((doc) => {
+        const ticket = doc.data();
+        let statusDisplay = ticket.status !== "New" ? `<br> ${ticket.status}` : ''; // Only show status if not "New"
+        let assignmentControl = ticket.status === "New"
+            ? `<select id='assign-${doc.id}'><option value=''>Assign Ticket</option><option value='Adnen'>Adnen</option><option value='David'>David</option><option value='Octavio'>Octavio</option></select>
+            <br><button onclick='deleteTicket("${doc.id}")'>Delete</button> <button onclick='assignTicket("${doc.id}")'>Save</button>`
+            : `<button onclick='deleteTicket("${doc.id}")'>Delete</button> <button onclick='unassignTicket("${doc.id}")'>Unassign</button>`;
+        let ticketHTML = `<div class='ticket-item'><b>${ticket.title}</b> <br>( ${ticket.priority} Priority )${statusDisplay}<br> Requester: ${ticket.requestor}<br> Description: ${ticket.description}<br> ${assignmentControl}</div>`;
+
+        if (ticket.status === "New") {
+            openTicketsList.innerHTML += ticketHTML;
+        } else {
+            pendingTicketsList.innerHTML += ticketHTML;
+        }
+    });
+};
+
+
+
 
         window.assignTicket = async (docId) => {
             const selectedPerson = document.getElementById(`assign-${docId}`).value;
@@ -128,7 +188,15 @@
                 status: "New"
             });
             console.log("Ticket unassigned!");
-            loadTickets();  // Reload tickets to update status
+            loadTickets();  // Reload tickets to reflect the change
+        };
+
+        window.deleteTicket = async (docId) => {
+            if (confirm("Are you sure you want to delete this ticket?")) {
+                await deleteDoc(doc(db, "tickets", docId));
+                console.log("Ticket deleted!");
+                loadTickets();  // Reload tickets to reflect the change
+            }
         };
 
         window.onload = () => {
