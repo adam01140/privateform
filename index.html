@@ -6,18 +6,22 @@
 </head>
 <body>
     
-    
     <!-- Ticket Submission Form -->
     <div>
         <h2>Submit a Ticket</h2>
-        <input type="text" id="ticketTitle" placeholder="Ticket Title">
-		<br>
-        <input type="text" id="ticketName" placeholder="Your Name">
-		<br>
-        <textarea id="ticketDesc" placeholder="Describe your issue"></textarea>
+        <input type="text" id="ticketTitle" placeholder="Ticket Title"><br>
+        <input type="text" id="ticketName" placeholder="Your Name"><br>
+        <textarea id="ticketDesc" placeholder="Describe your issue"></textarea><br>
+
+        <select id="ticketPriority">
+            <option value="Low">Low Priority</option>
+            <option value="Medium">Medium Priority</option>
+            <option value="High">High Priority</option>
+        </select><br>
         <button onclick="submitTicket()">Submit Ticket</button>
     </div>
 
+<center>
     <!-- Display Tickets -->
     <div id="ticketsList">
         <h2>Open Tickets</h2>
@@ -26,7 +30,8 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
         import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js';
-const firebaseConfig = {
+
+        const firebaseConfig = {
             apiKey: "AIzaSyDgqB5FaU1Zreq3H5WwfDo7WSUEkVOdKxU",
   authDomain: "formfiller-b9856.firebaseapp.com",
   projectId: "formfiller-b9856",
@@ -39,17 +44,17 @@ const firebaseConfig = {
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Existing functions
-
         window.submitTicket = async () => {
             const title = document.getElementById('ticketTitle').value;
             const name = document.getElementById('ticketName').value;
             const description = document.getElementById('ticketDesc').value;
+            const priority = document.getElementById('ticketPriority').value; // Get the priority
             if (title && name && description) {
                 await addDoc(collection(db, "tickets"), {
                     title: title,
                     requestor: name,
                     description: description,
+                    priority: priority, // Store priority
                     created: new Date()
                 });
                 console.log("Ticket submitted!");
@@ -64,7 +69,7 @@ const firebaseConfig = {
             const querySnapshot = await getDocs(collection(db, "tickets"));
             querySnapshot.forEach((doc) => {
                 const ticket = doc.data();
-                ticketsList.innerHTML += `<div><br><b>${ticket.title}</b><br> Requested by ${ticket.requestor} <br> Description: ${ticket.description} </div>`;
+                ticketsList.innerHTML += `<div><br><b>${ticket.title}</b> <br> ${ticket.priority} Priority<br> Requested by ${ticket.requestor}<br> Description: ${ticket.description}</div>`;
             });
         };
 
